@@ -2,7 +2,7 @@
 
 > AI & Data Science Engineer Portfolio built with React, TypeScript, and Framer Motion.
 
-🌐 **Live:** [abrar-portfolio.vercel.app](https://abrar-portfolio.vercel.app)
+🌐 **Live:** [abrar-portfolio.vercel.app]([https://abrar-portfolio.vercel.app](https://mohamed-abrar-portfolio.vercel.app/))
 
 ---
 
