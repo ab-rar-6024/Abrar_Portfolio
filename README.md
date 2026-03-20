@@ -8,7 +8,7 @@
 
 ## 👤 About
 
-Personal portfolio of **Mohamed Abrar S A**, a 2nd-year B.Tech student in Artificial Intelligence & Data Science at B. S. Abdur Rahman Crescent Institute of Science and Technology, Chennai.
+Personal portfolio of **Mohamed Abrar S A**, a B.Tech student in Artificial Intelligence & Data Science at B. S. Abdur Rahman Crescent Institute of Science and Technology, Chennai.
 
 Specializing in:
 - Machine Learning & Deep Learning
