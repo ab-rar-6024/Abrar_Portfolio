@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mohamed-abrar-portfolio.vercel.app/sitemap.xml
