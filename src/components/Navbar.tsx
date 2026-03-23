@@ -30,14 +30,36 @@ const Navbar: React.FC = () => {
           transition: 'background .4s, border-color .4s',
         }}
       >
-        {/* Logo */}
+        {/* ── Logo ── */}
         <button onClick={() => handleNav('hero')} style={{ background: 'none', border: 'none', cursor: 'none', padding: 0 }}>
-          <div style={{
-            fontFamily: 'var(--font-title)', fontSize: '1.25rem', fontWeight: 900,
-            letterSpacing: '3px', background: 'var(--gradient)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          } as React.CSSProperties}>
-            MOHAMED ABRAR S A
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              fontFamily: "'Orbitron', sans-serif",
+              fontSize: '1.05rem',
+              fontWeight: 900,
+              letterSpacing: '2px',
+              /* fallback color so text is NEVER invisible */
+              color: 'var(--cyan)',
+              /* gradient clip on top — supported browsers get the gradient */
+              background: 'linear-gradient(135deg, var(--cyan), var(--purple))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            } as React.CSSProperties}>
+              MOHAMED ABRAR S A
+            </div>
+            {/* Cyber-only: animated scan underline */}
+            {theme.id === 'cyber' && (
+              <motion.div
+                animate={{ scaleX: [0.3, 1, 0.3], opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute', bottom: -3, left: 0, right: 0, height: 1,
+                  background: 'linear-gradient(90deg, transparent, var(--cyan), transparent)',
+                  transformOrigin: 'left',
+                }}
+              />
+            )}
           </div>
         </button>
 

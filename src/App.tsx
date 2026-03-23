@@ -13,7 +13,7 @@ import Footer from './components/Footer';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── THEME DEFINITIONS ────────────────────────────────────────────
-export type ThemeId = 'cyber' | 'light' | 'neon';
+export type ThemeId = 'cyber' | 'light';
 
 export interface ThemeDef {
   id: ThemeId;
@@ -83,37 +83,6 @@ export const THEMES: ThemeDef[] = [
       '--accent1':     '#0ea5e9',
       '--accent2':     '#7c3aed',
       '--gradient':    'linear-gradient(135deg,#0ea5e9,#7c3aed)',
-    },
-  },
-  {
-    id: 'neon',
-    label: 'Neon',
-    icon: '◈',
-    vars: {
-      '--cyan':        '#39ff14',
-      '--cyan-dim':    'rgba(57,255,20,0.12)',
-      '--cyan-glow':   '0 0 20px rgba(57,255,20,0.5),0 0 60px rgba(57,255,20,0.15)',
-      '--purple':      '#ff00ff',
-      '--purple-dim':  'rgba(255,0,255,0.15)',
-      '--purple-glow': '0 0 20px rgba(255,0,255,0.5),0 0 60px rgba(255,0,255,0.15)',
-      '--pink':        '#ff6b00',
-      '--dark':        '#020208',
-      '--dark2':       '#06060f',
-      '--dark3':       '#0a0a18',
-      '--dark4':       '#0f0f22',
-      '--dark5':       '#16162e',
-      '--text':        '#f0fff0',
-      '--text2':       '#a0ffb0',
-      '--text3':       '#4a8a5a',
-      '--muted':       '#4a8a5a',
-      '--muted2':      '#a0ffb0',
-      '--border':      'rgba(57,255,20,0.15)',
-      '--border-hover':'rgba(57,255,20,0.4)',
-      '--nav-bg':      'rgba(2,2,8,0.97)',
-      '--nav-bg-top':  'rgba(2,2,8,0.5)',
-      '--accent1':     '#39ff14',
-      '--accent2':     '#ff00ff',
-      '--gradient':    'linear-gradient(135deg,#39ff14,#ff00ff)',
     },
   },
 ];
@@ -191,6 +160,8 @@ const App: React.FC = () => {
 // ─── SCROLL TO TOP FAB ────────────────────────────────────────────
 const ScrollToTopFAB: React.FC = () => {
   const [visible, setVisible] = React.useState(false);
+  const { theme } = useTheme();
+  const isCyber = theme.id === 'cyber';
 
   React.useEffect(() => {
     const h = () => setVisible(window.scrollY > 400);
@@ -207,7 +178,7 @@ const ScrollToTopFAB: React.FC = () => {
           exit={{   opacity: 0, scale: .7, y: 20  }}
           transition={{ duration: .3 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          whileHover={{ scale: 1.1, boxShadow: '0 0 30px rgba(0,245,255,.5)' }}
+          whileHover={{ scale: 1.12 }}
           whileTap={{ scale: .92 }}
           aria-label="Scroll to top"
           style={{
@@ -215,22 +186,28 @@ const ScrollToTopFAB: React.FC = () => {
             bottom: '2rem',
             right:  '2rem',
             zIndex:  800,
-            width:   48,
-            height:  48,
-            borderRadius: '50%',
-            background: 'var(--gradient)',
-            border: 'none',
+            width:   isCyber ? 46 : 48,
+            height:  isCyber ? 46 : 48,
+            borderRadius: isCyber ? '4px' : '50%',
+            background: isCyber ? 'transparent' : 'var(--gradient)',
+            border: isCyber ? '1px solid var(--cyan)' : 'none',
             cursor: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '1.1rem',
-            color: '#000',
+            color: isCyber ? 'var(--cyan)' : '#000',
             fontWeight: 700,
-            boxShadow: '0 0 20px rgba(0,245,255,.35)',
+            boxShadow: isCyber
+              ? '0 0 18px rgba(0,245,255,.4), inset 0 0 12px rgba(0,245,255,.08)'
+              : '0 0 20px rgba(0,245,255,.35)',
+            clipPath: isCyber
+              ? 'polygon(10% 0%,90% 0%,100% 10%,100% 90%,90% 100%,10% 100%,0% 90%,0% 10%)'
+              : 'none',
+            fontFamily: isCyber ? 'var(--font-mono)' : 'inherit',
           }}
         >
-          ↑
+          {isCyber ? '⬆' : '↑'}
         </motion.button>
       )}
     </AnimatePresence>
