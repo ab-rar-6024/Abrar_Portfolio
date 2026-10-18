@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, Copy, Github, Linkedin, Mail, MessageCircle, Phone, Send } from 'lucide-react';
 import { personalInfo } from '../data';
@@ -18,6 +18,15 @@ const Contact: React.FC = () => {
   const [touched, setTouched] = useState(false);
   const [copied, setCopied] = useState(false);
   const [time, setTime] = useState(istTime);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  // the message box grows with its text (no drag handle), up to a cap where it scrolls instead
+  useEffect(() => {
+    const el = messageRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 260)}px`;
+  }, [form.message]);
 
   useEffect(() => {
     const id = setInterval(() => setTime(istTime()), 15_000);
@@ -134,7 +143,7 @@ const Contact: React.FC = () => {
               </label>
               <label className={`full${touched && errors.message ? ' err' : ''}`}>
                 <span>Message</span>
-                <textarea rows={5} value={form.message} onChange={set('message')} placeholder="Tell me about the project, role or idea…" />
+                <textarea ref={messageRef} rows={4} value={form.message} onChange={set('message')} placeholder="Tell me about the project, role or idea…" />
                 {touched && errors.message && <small>{errors.message}</small>}
               </label>
             </div>
@@ -203,7 +212,8 @@ const Contact: React.FC = () => {
         .ct-fields label.full{grid-column:1 / -1}
         .ct-fields label > span{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#8a8f98}
         .ct-fields input,.ct-fields textarea{width:100%;padding:.75rem 0;border:0;border-bottom:1px solid rgba(255,255,255,.2);background:transparent;
-          color:#ededed;font-family:'Space Grotesk',sans-serif;font-size:1.1rem;outline:none;resize:vertical;transition:border-color .3s}
+          color:#ededed;font-family:'Space Grotesk',sans-serif;font-size:1.1rem;outline:none;resize:none;transition:border-color .3s}
+        .ct-fields textarea{min-height:7.5rem;max-height:260px;overflow-y:auto;line-height:1.5}
         .ct-fields input::placeholder,.ct-fields textarea::placeholder{color:#4b5058}
         .ct-fields input:focus,.ct-fields textarea:focus{border-bottom-color:var(--cyan)}
         .ct-fields label.err input,.ct-fields label.err textarea{border-bottom-color:#ff5a6e}
