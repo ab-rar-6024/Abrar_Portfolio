@@ -9,8 +9,8 @@ const CustomCursor: React.FC = () => {
   const mouseY = useRef(0);
 
   useEffect(() => {
-    // Hide on touch devices
-    if (window.matchMedia('(pointer: coarse)').matches) return;
+    // Touch screens have no cursor to replace; the elements are hidden with CSS too
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     document.body.style.cursor = 'none';
 
@@ -23,25 +23,17 @@ const CustomCursor: React.FC = () => {
       }
     };
 
-    const HOVER_SELECTORS = 'a, button, .project-card, .contact-link, .cert-badge, .stat-card, .skill-group, [role="button"]';
+    const HOVER_SELECTORS = 'a, button, input, textarea, [role="button"], [role="tab"], [role="radio"]';
 
-    const onEnter = () => {
-      dotRef.current?.classList.add('hovered');
-      ringRef.current?.classList.add('hovered');
-    };
-    const onLeave = () => {
-      dotRef.current?.classList.remove('hovered');
-      ringRef.current?.classList.remove('hovered');
+    // delegated, so elements that mount later (sections, menus, the photo viewer) still get the hover state
+    const onOver = (e: MouseEvent) => {
+      const hit = !!(e.target as Element).closest?.(HOVER_SELECTORS);
+      dotRef.current?.classList.toggle('hovered', hit);
+      ringRef.current?.classList.toggle('hovered', hit);
     };
 
     window.addEventListener('mousemove', onMove);
-
-    // Lazy hover targets
-    const targets = document.querySelectorAll<HTMLElement>(HOVER_SELECTORS);
-    targets.forEach((el) => {
-      el.addEventListener('mouseenter', onEnter);
-      el.addEventListener('mouseleave', onLeave);
-    });
+    document.addEventListener('mouseover', onOver);
 
     // Trail animation
     let animId: number;
@@ -58,10 +50,7 @@ const CustomCursor: React.FC = () => {
 
     return () => {
       window.removeEventListener('mousemove', onMove);
-      targets.forEach((el) => {
-        el.removeEventListener('mouseenter', onEnter);
-        el.removeEventListener('mouseleave', onLeave);
-      });
+      document.removeEventListener('mouseover', onOver);
       cancelAnimationFrame(animId);
       document.body.style.cursor = '';
     };
@@ -104,6 +93,7 @@ const CustomCursor: React.FC = () => {
       <style>{`
         .cursor-dot.hovered  { width: 16px !important; height: 16px !important; background: #9b59ff !important; }
         .cursor-ring.hovered { width: 56px !important; height: 56px !important; border-color: rgba(155,89,255,0.5) !important; }
+        @media (hover: none), (pointer: coarse) { .cursor-dot, .cursor-ring { display: none !important; } }
       `}</style>
     </>
   );

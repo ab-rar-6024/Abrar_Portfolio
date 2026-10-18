@@ -164,7 +164,8 @@ const ScrollToTopFAB: React.FC = () => {
   const isCyber = theme.id === 'cyber';
 
   React.useEffect(() => {
-    const h = () => setVisible(window.scrollY > 400);
+    // hide near the bottom, where the footer has its own back-to-top button
+    const h = () => setVisible(window.scrollY > 400 && window.innerHeight + window.scrollY < document.documentElement.scrollHeight - 320);
     window.addEventListener('scroll', h, { passive: true });
     return () => window.removeEventListener('scroll', h);
   }, []);
@@ -186,28 +187,24 @@ const ScrollToTopFAB: React.FC = () => {
             bottom: '2rem',
             right:  '2rem',
             zIndex:  800,
-            width:   isCyber ? 46 : 48,
-            height:  isCyber ? 46 : 48,
-            borderRadius: isCyber ? '4px' : '50%',
-            background: isCyber ? 'transparent' : 'var(--gradient)',
-            border: isCyber ? '1px solid var(--cyan)' : 'none',
+            width:   46,
+            height:  46,
+            borderRadius: '50%',
+            background: 'rgba(16,16,19,.78)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,.16)',
             cursor: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '1.1rem',
-            color: isCyber ? 'var(--cyan)' : '#000',
+            color: '#ededed',
             fontWeight: 700,
-            boxShadow: isCyber
-              ? '0 0 18px rgba(0,245,255,.4), inset 0 0 12px rgba(0,245,255,.08)'
-              : '0 0 20px rgba(0,245,255,.35)',
-            clipPath: isCyber
-              ? 'polygon(10% 0%,90% 0%,100% 10%,100% 90%,90% 100%,10% 100%,0% 90%,0% 10%)'
-              : 'none',
-            fontFamily: isCyber ? 'var(--font-mono)' : 'inherit',
+            boxShadow: '0 12px 30px rgba(0,0,0,.45)',
+            fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
-          {isCyber ? '⬆' : '↑'}
+          ↑
         </motion.button>
       )}
     </AnimatePresence>

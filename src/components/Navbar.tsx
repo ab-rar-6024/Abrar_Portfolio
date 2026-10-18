@@ -1,284 +1,194 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
 import { NAV_ITEMS } from '../data/portfolioData';
-import { useNavScroll, useActiveSection, useScrollTo } from '../hooks';
-import { useTheme, THEMES, type ThemeId } from '../App';
+import { personalInfo } from '../data';
+import { useActiveSection, useNavScroll, useScrollTo } from '../hooks';
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+const LINKS = NAV_ITEMS.filter(n => n.href !== 'hero');
+const GLYPHS = 'abcdefghijklmnopqrstuvwxyz_/<>';
+const LOGO = 'abrar';
+
+const istTime = () =>
+  new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', hour12: true });
+
+// scrambles to random glyphs, then resolves left to right
+function useScramble(text: string) {
+  const [out, setOut] = useState(text);
+  const raf = useRef(0);
+  const run = () => {
+    cancelAnimationFrame(raf.current);
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const done = Math.floor(((now - t0) / 380) * text.length);
+      setOut(text.split('').map((c, i) => (i < done ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)])).join(''));
+      if (done < text.length) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+  };
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  return { out, run };
+}
 
 const Navbar: React.FC = () => {
-  const scrolled    = useNavScroll(60);
-  const activeId    = useActiveSection(NAV_ITEMS.map(n => n.href));
-  const scrollTo    = useScrollTo();
-  const [menuOpen, setMenuOpen]       = useState(false);
-  const [themeOpen, setThemeOpen]     = useState(false);
-  const { theme, setTheme }           = useTheme();
+  const scrolled = useNavScroll(60);
+  const activeId = useActiveSection(NAV_ITEMS.map(n => n.href));
+  const scrollTo = useScrollTo();
+  const [open, setOpen] = useState(false);
+  const [time, setTime] = useState(istTime);
+  const logo = useScramble(LOGO);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
-  const handleNav = (href: string) => { scrollTo(href); setMenuOpen(false); };
+  useEffect(() => {
+    const id = setInterval(() => setTime(istTime()), 15_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // lock page scroll while the mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  const go = (href: string) => { setOpen(false); scrollTo(href); };
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -80, opacity: 0 }}
+      <motion.header
+        className={`nv${scrolled ? ' pill' : ''}`}
+        initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: .7, ease: [.16, 1, .3, 1] }}
-        style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '0 6%', height: 72,
-          background: scrolled ? 'var(--nav-bg)' : 'var(--nav-bg-top)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${scrolled ? 'rgba(0,245,255,.15)' : 'transparent'}`,
-          transition: 'background .4s, border-color .4s',
-        }}
+        transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
       >
-        {/* ── Logo ── */}
-        <button onClick={() => handleNav('hero')} style={{ background: 'none', border: 'none', cursor: 'none', padding: 0 }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              fontFamily: "'Orbitron', sans-serif",
-              fontSize: '1.05rem',
-              fontWeight: 900,
-              letterSpacing: '2px',
-              /* fallback color so text is NEVER invisible */
-              color: 'var(--cyan)',
-              /* gradient clip on top — supported browsers get the gradient */
-              background: 'linear-gradient(135deg, var(--cyan), var(--purple))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            } as React.CSSProperties}>
-              MOHAMED ABRAR S A
-            </div>
-            {/* Cyber-only: animated scan underline */}
-            {theme.id === 'cyber' && (
-              <motion.div
-                animate={{ scaleX: [0.3, 1, 0.3], opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                style={{
-                  position: 'absolute', bottom: -3, left: 0, right: 0, height: 1,
-                  background: 'linear-gradient(90deg, transparent, var(--cyan), transparent)',
-                  transformOrigin: 'left',
-                }}
-              />
-            )}
-          </div>
-        </button>
+        <div className="nv-bar">
+          <button className="nv-logo" onMouseEnter={logo.run} onClick={() => go('hero')} aria-label="Back to top">
+            {logo.out}<span>.</span>
+          </button>
 
-        {/* Desktop nav links */}
-        <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', alignItems: 'center' }} className="nav-desktop">
-          {NAV_ITEMS.map(item => (
-            <li key={item.href}>
-              <button
-                onClick={() => handleNav(item.href)}
-                style={{
-                  position: 'relative', background: 'none', border: 'none', cursor: 'none',
-                  color: activeId === item.href ? 'var(--cyan)' : '#64748b',
-                  fontFamily: 'var(--font-body)', fontSize: '.9rem', fontWeight: 600,
-                  letterSpacing: '1px', textTransform: 'uppercase', padding: '.4rem 0',
-                  transition: 'color .25s',
-                }}
-              >
-                {item.label}
-                <motion.span
-                  style={{
-                    position: 'absolute', bottom: -2, left: 0, right: 0,
-                    height: 1, background: 'var(--gradient)', borderRadius: 1,
-                    opacity: activeId === item.href ? 1 : 0,
-                  }}
-                  animate={{ opacity: activeId === item.href ? 1 : 0 }}
-                  transition={{ duration: .25 }}
-                />
+          <nav className="nv-links" aria-label="Sections">
+            {LINKS.map((l, i) => (
+              <button key={l.href} onClick={() => go(l.href)} className={activeId === l.href ? 'on' : ''}>
+                {activeId === l.href && (
+                  <motion.span layoutId="nv-active" className="nv-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />
+                )}
+                <sup>{String(i + 2).padStart(2, '0')}</sup>
+                <span>{l.label}</span>
               </button>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </nav>
 
-        {/* Right side: theme toggle + hire me */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-
-          {/* ── Theme switcher ── */}
-          <div style={{ position: 'relative' }}>
-            <motion.button
-              onClick={() => setThemeOpen(v => !v)}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: .93 }}
-              title="Switch theme"
-              style={{
-                background: 'transparent',
-                border: `1px solid var(--border-hover)`,
-                borderRadius: 8,
-                cursor: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '.4rem',
-                padding: '.38rem .75rem',
-                color: 'var(--cyan)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '.72rem',
-                letterSpacing: '1px',
-                transition: 'all .25s',
-              }}
-            >
-              <span style={{ fontSize: '.9rem' }}>{theme.icon}</span>
-              <span className="theme-label-desktop">{theme.label}</span>
-              <motion.span
-                animate={{ rotate: themeOpen ? 180 : 0 }}
-                transition={{ duration: .25 }}
-                style={{ display: 'inline-block', fontSize: '.6rem', opacity: .7 }}
-              >
-                ▾
-              </motion.span>
-            </motion.button>
-
-            {/* Dropdown */}
-            <AnimatePresence>
-              {themeOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: .96 }}
-                  animate={{ opacity: 1, y: 0,  scale: 1   }}
-                  exit={{   opacity: 0, y: -8, scale: .96  }}
-                  transition={{ duration: .2 }}
-                  style={{
-                    position: 'absolute', top: 'calc(100% + 10px)', right: 0,
-                    background: 'var(--dark3)',
-                    border: '1px solid var(--border-hover)',
-                    borderRadius: 10, overflow: 'hidden',
-                    minWidth: 130, zIndex: 2000,
-                    boxShadow: '0 8px 32px rgba(0,0,0,.5)',
-                  }}
-                >
-                  {THEMES.map((t, i) => (
-                    <motion.button
-                      key={t.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1,  x: 0   }}
-                      transition={{ delay: i * .05 }}
-                      onClick={() => { setTheme(t.id as ThemeId); setThemeOpen(false); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '.6rem',
-                        width: '100%', padding: '.65rem 1rem',
-                        background: theme.id === t.id ? 'var(--cyan-dim)' : 'transparent',
-                        border: 'none', borderBottom: i < THEMES.length - 1 ? '1px solid var(--border)' : 'none',
-                        cursor: 'none', color: theme.id === t.id ? 'var(--cyan)' : 'var(--text2)',
-                        fontFamily: 'var(--font-mono)', fontSize: '.78rem',
-                        letterSpacing: '1px', textAlign: 'left',
-                        transition: 'background .2s, color .2s',
-                      }}
-                      onMouseEnter={e => { if (theme.id !== t.id) (e.currentTarget as HTMLButtonElement).style.background = 'var(--dark4)'; }}
-                      onMouseLeave={e => { if (theme.id !== t.id) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                    >
-                      <span style={{ fontSize: '1rem' }}>{t.icon}</span>
-                      {t.label}
-                      {theme.id === t.id && (
-                        <span style={{ marginLeft: 'auto', fontSize: '.65rem', opacity: .8 }}>✓</span>
-                      )}
-                    </motion.button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="nv-right">
+            <span className="nv-time"><i /> CHN {time}</span>
+            <button className="nv-cta" onClick={() => go('contact')}>
+              Let’s talk <ArrowUpRight size={15} />
+            </button>
+            <button className={`nv-burger${open ? ' x' : ''}`} onClick={() => setOpen(o => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}>
+              <span /><span />
+            </button>
           </div>
 
-          {/* Hire Me CTA */}
-          <button
-            onClick={() => handleNav('contact')}
-            className="btn btn-outline"
-            style={{ padding: '.55rem 1.4rem', fontSize: '.72rem', cursor: 'none' }}
-            id="nav-cta"
-          >
-            Hire Me
-          </button>
-
-          {/* Hamburger */}
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className="hamburger"
-            aria-label="Toggle menu"
-            style={{ display: 'none', flexDirection: 'column', gap: 5, background: 'none', border: 'none', cursor: 'none', padding: '4px' }}
-          >
-            {[0, 1, 2].map(i => (
-              <motion.span
-                key={i}
-                animate={{
-                  rotate:  menuOpen && i === 0 ? 45  : menuOpen && i === 2 ? -45 : 0,
-                  y:       menuOpen && i === 0 ? 7   : menuOpen && i === 2 ? -7  : 0,
-                  opacity: menuOpen && i === 1 ? 0   : 1,
-                }}
-                style={{ display: 'block', width: 22, height: 2, background: 'var(--cyan)', borderRadius: 1 }}
-              />
-            ))}
-          </button>
+          <motion.span className="nv-progress" style={{ scaleX: progress }} aria-hidden />
         </div>
-      </motion.nav>
+      </motion.header>
 
-      {/* Mobile menu */}
+      {/* full-screen mobile menu */}
       <AnimatePresence>
-        {menuOpen && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{   opacity: 0, y: -20 }}
-            transition={{ duration: .3 }}
-            style={{
-              position: 'fixed', top: 72, left: 0, right: 0, zIndex: 999,
-              background: 'rgba(3,7,18,.98)', backdropFilter: 'blur(20px)',
-              borderBottom: '1px solid var(--border)',
-              padding: '1.5rem 6%', display: 'flex', flexDirection: 'column', gap: '1rem',
-            }}
+            className="nv-menu"
+            initial={{ clipPath: 'inset(0 0 100% 0)' }}
+            animate={{ clipPath: 'inset(0 0 0% 0)' }}
+            exit={{ clipPath: 'inset(0 0 100% 0)' }}
+            transition={{ duration: 0.6, ease: EASE }}
           >
-            {NAV_ITEMS.map((item, i) => (
-              <motion.div key={item.href} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }}>
-                <button
-                  onClick={() => handleNav(item.href)}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'none',
-                    color: activeId === item.href ? 'var(--cyan)' : '#94a3b8',
-                    fontFamily: 'var(--font-body)', fontSize: '1.1rem', fontWeight: 600,
-                    letterSpacing: '1px', textTransform: 'uppercase',
-                    padding: '.5rem 0', width: '100%', textAlign: 'left', transition: 'color .2s',
-                  }}
-                >
-                  {activeId === item.href && (
-                    <span style={{ color: 'var(--cyan)', marginRight: '.5rem', fontFamily: 'var(--font-mono)', fontSize: '.8rem' }}>▶</span>
-                  )}
-                  {item.label}
-                </button>
-              </motion.div>
-            ))}
-
-            {/* Mobile theme switcher */}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
-              {THEMES.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => { setTheme(t.id as ThemeId); setThemeOpen(false); }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '.4rem',
-                    padding: '.4rem .9rem', borderRadius: 6,
-                    background: theme.id === t.id ? 'var(--cyan-dim)' : 'var(--dark4)',
-                    border: `1px solid ${theme.id === t.id ? 'var(--border-hover)' : 'var(--border)'}`,
-                    color: theme.id === t.id ? 'var(--cyan)' : 'var(--text2)',
-                    fontFamily: 'var(--font-mono)', fontSize: '.75rem',
-                    cursor: 'none', transition: 'all .2s',
-                  }}
-                >
-                  <span>{t.icon}</span> {t.label}
-                </button>
+            <ul>
+              {NAV_ITEMS.map((l, i) => (
+                <li key={l.href}>
+                  <motion.button
+                    initial={{ y: '110%' }}
+                    animate={{ y: '0%' }}
+                    exit={{ y: '110%' }}
+                    transition={{ duration: 0.6, ease: EASE, delay: 0.15 + i * 0.05 }}
+                    onClick={() => go(l.href)}
+                    className={activeId === l.href ? 'on' : ''}
+                  >
+                    <sup>{String(i + 1).padStart(2, '0')}</sup>{l.label}
+                  </motion.button>
+                </li>
               ))}
-            </div>
+            </ul>
+            <motion.div className="nv-menu-foot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+              <a href={`mailto:${personalInfo.email}`}>{personalInfo.email}</a>
+              <div>
+                <a href={personalInfo.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <style>{`
-        @media(max-width:768px){
-          .nav-desktop{display:none!important}
-          .hamburger{display:flex!important}
-          #nav-cta{display:none!important}
-          .theme-label-desktop{display:none!important}
-        }
-        @media(min-width:769px){
-          #nav-cta{display:inline-flex!important}
-          .theme-label-desktop{display:inline!important}
+        .nv{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:center;padding:0;pointer-events:none;
+          transition:padding .5s cubic-bezier(.22,1,.36,1)}
+        .nv-bar{position:relative;pointer-events:auto;width:100%;max-width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
+          padding:1.25rem 2.2%;border:1px solid transparent;border-radius:0;overflow:hidden;
+          transition:max-width .6s cubic-bezier(.22,1,.36,1),padding .6s cubic-bezier(.22,1,.36,1),background .4s,border-color .4s,border-radius .6s}
+        .nv.pill{padding-top:14px}
+        .nv.pill .nv-bar{max-width:min(980px,94vw);padding:.55rem .6rem .55rem 1.3rem;border-radius:999px;
+          background:rgba(16,16,19,.72);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+          border-color:rgba(255,255,255,.1);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+
+        .nv-logo{background:none;border:0;padding:0;cursor:pointer;color:#ededed;font-family:'Space Grotesk',sans-serif;font-weight:600;
+          font-size:1.35rem;letter-spacing:-.04em;min-width:4.4ch;text-align:left}
+        .nv-logo span{color:var(--cyan)}
+
+        .nv-links{display:flex;gap:.2rem}
+        .nv-links button{position:relative;display:flex;align-items:flex-start;gap:.2rem;padding:.5rem .85rem;border:0;border-radius:999px;background:none;
+          cursor:pointer;color:#a1a6ae;font-family:'Space Grotesk',sans-serif;font-size:.92rem;transition:color .25s}
+        .nv-links button:hover,.nv-links button.on{color:#ededed}
+        .nv-links sup{position:relative;z-index:1;font-family:'Space Mono',monospace;font-size:.55rem;opacity:.6;margin-top:.15rem}
+        .nv-links button > span:not(.nv-active){position:relative;z-index:1}
+        .nv-active{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
+
+        .nv-right{display:flex;align-items:center;gap:1rem}
+        .nv-time{display:flex;align-items:center;gap:.45rem;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.06em;color:#a1a6ae;white-space:nowrap}
+        .nv-time i{width:6px;height:6px;border-radius:50%;background:#3ddc97;box-shadow:0 0 8px #3ddc97}
+        .nv-cta{display:inline-flex;align-items:center;gap:.35rem;padding:.6rem 1.1rem;border-radius:999px;border:0;cursor:pointer;
+          background:#ededed;color:#0b0b0c;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:.9rem;white-space:nowrap;
+          transition:background .25s,transform .25s}
+        .nv-cta:hover{background:var(--cyan);transform:translateY(-1px)}
+        .nv-cta svg{transition:transform .3s}
+        .nv-cta:hover svg{transform:rotate(45deg)}
+        .nv-progress{position:absolute;left:0;right:0;bottom:0;height:1.5px;transform-origin:left;background:linear-gradient(90deg,var(--cyan),var(--purple));
+          opacity:0;transition:opacity .4s}
+        .nv.pill .nv-progress{opacity:1}
+
+        .nv-burger{display:none;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:none;cursor:pointer;
+          flex-direction:column;justify-content:center;align-items:center;gap:6px}
+        .nv-burger span{display:block;width:16px;height:1.5px;background:#ededed;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+        .nv-burger.x span:first-child{transform:translateY(3.75px) rotate(45deg)}
+        .nv-burger.x span:last-child{transform:translateY(-3.75px) rotate(-45deg)}
+
+        .nv-menu{position:fixed;inset:0;z-index:999;background:#0b0b0c;display:flex;flex-direction:column;justify-content:space-between;
+          padding:6.5rem 1.4rem 2rem}
+        .nv-menu ul{list-style:none;margin:0;padding:0}
+        .nv-menu li{overflow:hidden;border-bottom:1px solid rgba(255,255,255,.1)}
+        .nv-menu li button{display:flex;align-items:flex-start;gap:.5rem;width:100%;padding:.55rem 0;background:none;border:0;cursor:pointer;text-align:left;
+          color:#ededed;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:clamp(2.4rem,11vw,3.6rem);letter-spacing:-.04em;line-height:1.05}
+        .nv-menu li button.on{color:var(--cyan)}
+        .nv-menu sup{font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:0;opacity:.5;margin-top:.6rem}
+        .nv-menu-foot{display:flex;flex-direction:column;gap:.8rem;font-family:'Space Grotesk',sans-serif}
+        .nv-menu-foot a{color:#a1a6ae;text-decoration:none}
+        .nv-menu-foot div{display:flex;gap:1.4rem}
+
+        @media (max-width:1060px){ .nv-time{display:none} }
+        @media (max-width:860px){
+          .nv-links,.nv-cta{display:none}
+          .nv-burger{display:flex}
+          .nv.pill .nv-bar{padding:.45rem .45rem .45rem 1.2rem}
         }
       `}</style>
     </>
