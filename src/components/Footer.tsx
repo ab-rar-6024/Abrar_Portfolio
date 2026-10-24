@@ -90,7 +90,8 @@ const Footer: React.FC = () => {
                 viewport={{ once: true, margin: '-20px' }}
                 transition={{ duration: 1, ease: EASE, delay: i * 0.06 }}
               >
-                {ch}
+                {/* each letter hops in turn, so a wave runs through the word */}
+                <span className="ft-hop" style={{ animationDelay: `${1.4 + i * 0.12}s` }}>{ch}</span>
               </motion.span>
             </span>
           ))}
@@ -134,7 +135,18 @@ const Footer: React.FC = () => {
 
         .ft-word{display:flex;justify-content:center;margin:3.5rem 0 1rem;font-family:'Space Grotesk',sans-serif;font-weight:600;
           font-size:clamp(6rem,29vw,34rem);line-height:.78;letter-spacing:-.06em;user-select:none}
-        .ft-mask{display:inline-block;overflow:hidden;padding-bottom:.04em}
+        /* clip only below the baseline (for the slide-up reveal) so letters can hop above the mask */
+        .ft-mask{display:inline-block;padding-bottom:.04em;clip-path:inset(-60% -20% 0 -20%)}
+        .ft-hop{display:inline-block;animation:ft-hop 2.6s cubic-bezier(.33,0,.2,1) infinite}
+        /* each letter flashes the accent blue while it is in the air, then settles back to its own colour */
+        @keyframes ft-hop{
+          0%,4%,24%,100%{color:inherit}
+          0%,34%,100%{transform:translateY(0)}
+          11%,14%{color:var(--cyan)}
+          12%{transform:translateY(-16%)}
+          22%{transform:translateY(2%)}
+          28%{transform:translateY(-3%)}
+        }
         .ft-mask > span{display:inline-block;transition:transform .45s cubic-bezier(.22,1,.36,1),color .3s}
         .ft-mask:hover > span{transform:translateY(-8%)!important;color:var(--cyan)}
 
@@ -156,7 +168,7 @@ const Footer: React.FC = () => {
           .ft-wrap{padding:3.5rem 1.2rem 1.4rem}
           .ft-built{display:none}
         }
-        @media (prefers-reduced-motion:reduce){.ft-avail i,.ft::before{animation:none}}
+        @media (prefers-reduced-motion:reduce){.ft-avail i,.ft::before,.ft-hop{animation:none}}
       `}</style>
     </footer>
   );
