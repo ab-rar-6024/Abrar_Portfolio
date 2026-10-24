@@ -49,30 +49,31 @@ export type Certification = {
   date: string;
   category: CertCategory;
   url?: string;          // public verification link, when the certificate has one
+  image?: string;        // the real certificate, in /public/certificates (a -thumb.jpg sits beside it)
 };
 
 // Taken from the certificate files themselves, newest first.
 export const certifications: Certification[] = [
-  { name: 'Deep Learning', issuer: 'Illinois Tech', via: 'Coursera', date: 'Sep 2026', category: 'AI & ML', url: 'https://coursera.org/verify/G0562FX9NIEA' },
-  { name: 'Applied AI Specialization (6 courses)', issuer: 'Vanderbilt University', via: 'Coursera', date: 'Aug 2026', category: 'Generative AI', url: 'https://coursera.org/verify/specialization/P58ESS9YFE7H' },
-  { name: 'Applied Generative AI & Prompt Engineering Mastery', issuer: 'LearnKartS', via: 'Coursera', date: 'Jul 2026', category: 'Generative AI', url: 'https://coursera.org/verify/XRJZTYRRQVRZ' },
-  { name: 'Prompt Engineering for ChatGPT', issuer: 'Vanderbilt University', via: 'Coursera', date: 'Jul 2026', category: 'Generative AI', url: 'https://coursera.org/verify/XW5ZJVSAKJI5' },
-  { name: 'Discover Data Analysis', issuer: 'Microsoft Learn', date: 'Jul 2026', category: 'Data & Analytics' },
-  { name: 'Claude 101', issuer: 'Anthropic', date: '2026', category: 'Generative AI' },
-  { name: 'Introduction to Data Science', issuer: 'Infosys Springboard', date: 'Jun 2025', category: 'Data & Analytics' },
-  { name: 'Introduction to Natural Language Processing', issuer: 'Infosys Springboard', date: 'Jun 2025', category: 'AI & ML' },
-  { name: 'Data Analytics Job Simulation', issuer: 'Quantium', via: 'Forage', date: 'Apr 2025', category: 'Data & Analytics' },
-  { name: 'Advanced C++ Training', issuer: 'IIT Bombay', via: 'Spoken Tutorial', date: '2025', category: 'Programming & Cloud' },
-  { name: 'AWS S3 Basics', issuer: 'Coursera Project Network', via: 'Coursera', date: 'Apr 2025', category: 'Programming & Cloud', url: 'https://coursera.org/verify/EZV6SZNTCOVQ' },
-  { name: 'GenAI Job Simulation', issuer: 'BCG X', via: 'Forage', date: 'Apr 2025', category: 'Generative AI' },
-  { name: 'Introduction to Business Intelligence', issuer: 'Infosys Springboard', date: 'Mar 2025', category: 'Data & Analytics' },
-  { name: 'Learning Data Mining with R', issuer: 'Infosys Springboard', date: 'Feb 2025', category: 'Data & Analytics' },
-  { name: 'Deep Learning Project: CNN Image Classification', issuer: 'Udemy', date: 'Jan 2025', category: 'AI & ML', url: 'https://ude.my/UC-febe22d0-b1a2-484d-baf1-41408fd4744a' },
-  { name: 'Machine Learning A-Z: AI, Python & R', issuer: 'Udemy', date: 'Jan 2025', category: 'AI & ML', url: 'https://ude.my/UC-f2c3cda0-185f-4a53-b733-fdbbda3f2ed1' },
-  { name: 'Introduction to SQL', issuer: 'Simplilearn SkillUp', date: 'Oct 2024', category: 'Data & Analytics' },
-  { name: 'Introduction to Python', issuer: 'LearnTube.ai', date: 'Oct 2024', category: 'Programming & Cloud' },
-  { name: 'C Training (scored 95%)', issuer: 'IIT Bombay', via: 'Spoken Tutorial', date: '2024', category: 'Programming & Cloud' },
-  { name: 'SQL (Basic)', issuer: 'HackerRank', date: 'Sep 2024', category: 'Data & Analytics', url: 'https://www.hackerrank.com/certificates/db9f4381030d' },
+  { name: 'Deep Learning', issuer: 'Illinois Tech', via: 'Coursera', date: 'Sep 2026', category: 'AI & ML', url: 'https://coursera.org/verify/G0562FX9NIEA', image: '/certificates/deep-learning-illinois.jpg' },
+  { name: 'Applied AI Specialization (6 courses)', issuer: 'Vanderbilt University', via: 'Coursera', date: 'Aug 2026', category: 'Generative AI', url: 'https://coursera.org/verify/specialization/P58ESS9YFE7H', image: '/certificates/applied-ai-vanderbilt.jpg' },
+  { name: 'Applied Generative AI & Prompt Engineering Mastery', issuer: 'LearnKartS', via: 'Coursera', date: 'Jul 2026', category: 'Generative AI', url: 'https://coursera.org/verify/XRJZTYRRQVRZ', image: '/certificates/genai-prompt-mastery.jpg' },
+  { name: 'Prompt Engineering for ChatGPT', issuer: 'Vanderbilt University', via: 'Coursera', date: 'Jul 2026', category: 'Generative AI', url: 'https://coursera.org/verify/XW5ZJVSAKJI5', image: '/certificates/prompt-engineering-chatgpt.jpg' },
+  { name: 'Discover Data Analysis', issuer: 'Microsoft Learn', date: 'Jul 2026', category: 'Data & Analytics', image: '/certificates/discover-data-analysis.jpg' },
+  { name: 'Claude 101', issuer: 'Anthropic', date: '2026', category: 'Generative AI', image: '/certificates/claude-101.jpg' },
+  { name: 'Introduction to Data Science', issuer: 'Infosys Springboard', date: 'Jun 2025', category: 'Data & Analytics', image: '/certificates/intro-data-science.jpg' },
+  { name: 'Introduction to Natural Language Processing', issuer: 'Infosys Springboard', date: 'Jun 2025', category: 'AI & ML', image: '/certificates/intro-nlp.jpg' },
+  { name: 'Data Analytics Job Simulation', issuer: 'Quantium', via: 'Forage', date: 'Apr 2025', category: 'Data & Analytics', image: '/certificates/quantium-data-analytics.jpg' },
+  { name: 'Advanced C++ Training', issuer: 'IIT Bombay', via: 'Spoken Tutorial', date: '2025', category: 'Programming & Cloud', image: '/certificates/advanced-cpp.jpg' },
+  { name: 'AWS S3 Basics', issuer: 'Coursera Project Network', via: 'Coursera', date: 'Apr 2025', category: 'Programming & Cloud', url: 'https://coursera.org/verify/EZV6SZNTCOVQ', image: '/certificates/aws-s3-basics.jpg' },
+  { name: 'GenAI Job Simulation', issuer: 'BCG X', via: 'Forage', date: 'Apr 2025', category: 'Generative AI', image: '/certificates/bcgx-genai.jpg' },
+  { name: 'Introduction to Business Intelligence', issuer: 'Infosys Springboard', date: 'Mar 2025', category: 'Data & Analytics', image: '/certificates/intro-business-intelligence.jpg' },
+  { name: 'Learning Data Mining with R', issuer: 'Infosys Springboard', date: 'Feb 2025', category: 'Data & Analytics', image: '/certificates/data-mining-r.jpg' },
+  { name: 'Deep Learning Project: CNN Image Classification', issuer: 'Udemy', date: 'Jan 2025', category: 'AI & ML', url: 'https://ude.my/UC-febe22d0-b1a2-484d-baf1-41408fd4744a', image: '/certificates/cnn-image-classification.jpg' },
+  { name: 'Machine Learning A-Z: AI, Python & R', issuer: 'Udemy', date: 'Jan 2025', category: 'AI & ML', url: 'https://ude.my/UC-f2c3cda0-185f-4a53-b733-fdbbda3f2ed1', image: '/certificates/machine-learning-a-z.jpg' },
+  { name: 'Introduction to SQL', issuer: 'Simplilearn SkillUp', date: 'Oct 2024', category: 'Data & Analytics', image: '/certificates/intro-sql.jpg' },
+  { name: 'Introduction to Python', issuer: 'LearnTube.ai', date: 'Oct 2024', category: 'Programming & Cloud', image: '/certificates/intro-python.jpg' },
+  { name: 'C Training (scored 95%)', issuer: 'IIT Bombay', via: 'Spoken Tutorial', date: '2024', category: 'Programming & Cloud', image: '/certificates/c-training.jpg' },
+  { name: 'SQL (Basic)', issuer: 'HackerRank', date: 'Sep 2024', category: 'Data & Analytics', url: 'https://www.hackerrank.com/certificates/db9f4381030d', image: '/certificates/sql-basic-hackerrank.jpg' },
 ];
 
 export const awards = [

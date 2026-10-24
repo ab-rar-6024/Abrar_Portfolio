@@ -1,16 +1,24 @@
-import React, { useState, useCallback, createContext, useContext } from 'react';
+import React, { useState, useCallback, useEffect, createContext, useContext } from 'react';
 import Loader from './components/Loader';
 import CustomCursor from './components/CustomCursor';
 import ParticleBackground from './components/ParticleBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
-import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Experience from './components/Experience';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import SkillsPage from './pages/SkillsPage';
+import CertificationsPage from './pages/CertificationsPage';
+import { usePath, type Path } from './router';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const TITLES: Record<Path, string> = {
+  '/': 'Mohamed Abrar S A | AI & Data Science Engineer',
+  '/skills': 'Skills — Mohamed Abrar S A',
+  '/certifications': 'Certifications — Mohamed Abrar S A',
+};
 
 // ─── THEME DEFINITIONS ────────────────────────────────────────────
 export type ThemeId = 'cyber' | 'light';
@@ -105,6 +113,9 @@ function applyTheme(theme: ThemeDef) {
 const App: React.FC = () => {
   const [loaded, setLoaded] = useState(false);
   const [themeId, setThemeId] = useState<ThemeId>('cyber');
+  const path = usePath();
+
+  useEffect(() => { document.title = TITLES[path]; }, [path]);
 
   const handleLoaderComplete = useCallback(() => setLoaded(true), []);
 
@@ -139,15 +150,18 @@ const App: React.FC = () => {
             transition={{ duration: .8, ease: 'easeOut' }}
           >
             <ParticleBackground />
-            <Navbar />
-            <main>
-              <Hero />
-              <About />
-              <Skills />
-              <Projects />
-              <Experience />
-              <Contact />
-            </main>
+            <Navbar path={path} />
+            {path === '/skills' ? <SkillsPage />
+              : path === '/certifications' ? <CertificationsPage />
+              : (
+                <main>
+                  <Hero />
+                  <About />
+                  <Projects />
+                  <Experience />
+                  <Contact />
+                </main>
+              )}
             <Footer />
             <ScrollToTopFAB />
           </motion.div>

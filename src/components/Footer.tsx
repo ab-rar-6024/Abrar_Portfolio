@@ -4,6 +4,7 @@ import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import { useScrollTo } from '../hooks';
 import { NAV_ITEMS } from '../data/portfolioData';
 import { personalInfo, projects } from '../data';
+import { currentPath, navigate } from '../router';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const WORD = 'abrar';
@@ -44,7 +45,11 @@ const Footer: React.FC = () => {
             <p className="ft-title">Navigate</p>
             <ul>
               {NAV_ITEMS.filter(n => n.href !== 'hero').map(n => (
-                <li key={n.href}><button onClick={() => scrollTo(n.href)}>{n.label}</button></li>
+                <li key={n.href}>
+                  <button onClick={() => (n.page ? navigate(n.page) : currentPath() === '/' ? scrollTo(n.href) : navigate(`/#${n.href}`))}>
+                    {n.label}
+                  </button>
+                </li>
               ))}
             </ul>
           </motion.div>
@@ -101,7 +106,8 @@ const Footer: React.FC = () => {
       </div>
 
       <style>{`
-        .ft{position:relative;z-index:1;background:#0b0b0c;color:#ededed;border-top:1px solid rgba(255,255,255,.12);overflow:hidden}
+        .ft{position:relative;z-index:1;background:#0b0b0c;color:#ededed;border-top:1px solid rgba(255,255,255,.12);overflow:hidden;
+          animation:ft-drift 54s ease-in-out infinite}
         .ft-wrap{max-width:1240px;margin:0 auto;padding:4.5rem 2.2% 1.6rem}
         .ft-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:2.5rem}
         .ft-logo{margin:0 0 1rem;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.6rem;letter-spacing:-.04em}
@@ -129,13 +135,20 @@ const Footer: React.FC = () => {
           background:none;color:#ededed;cursor:pointer;font-family:inherit;font-size:inherit;transition:background .25s,color .25s}
         .ft-bar button:hover{background:#ededed;color:#0b0b0c}
         @keyframes ft-ping{0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}80%,100%{box-shadow:0 0 0 8px rgba(61,220,151,0)}}
+        /* the background drifts through deep tints slowly enough that the change is never noticed as it happens */
+        @keyframes ft-drift{
+          0%,100%{background-color:#0b0b0c}
+          25%{background-color:#0a1326}
+          50%{background-color:#170c26}
+          75%{background-color:#06191c}
+        }
 
         @media (max-width:900px){ .ft-cols{grid-template-columns:1fr 1fr} .ft-about{grid-column:1 / -1} }
         @media (max-width:560px){
           .ft-wrap{padding:3.5rem 1.2rem 1.4rem}
           .ft-built{display:none}
         }
-        @media (prefers-reduced-motion:reduce){.ft-avail i{animation:none}}
+        @media (prefers-reduced-motion:reduce){.ft-avail i,.ft{animation:none}}
       `}</style>
     </footer>
   );

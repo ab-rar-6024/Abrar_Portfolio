@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { NAV_ITEMS } from '../data/portfolioData';
 import { personalInfo } from '../data';
 import { useActiveSection, useNavScroll, useScrollTo } from '../hooks';
+import { navigate, type Path } from '../router';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const LINKS = NAV_ITEMS.filter(n => n.href !== 'hero');
@@ -31,9 +32,11 @@ function useScramble(text: string) {
   return { out, run };
 }
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<{ path: Path }> = ({ path }) => {
   const scrolled = useNavScroll(60);
-  const activeId = useActiveSection(NAV_ITEMS.map(n => n.href));
+  const sectionId = useActiveSection(NAV_ITEMS.map(n => n.href));
+  // on a sub-page the highlighted link is that page, not a home section
+  const activeId = path === '/' ? sectionId : NAV_ITEMS.find(n => n.page === path)?.href;
   const scrollTo = useScrollTo();
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState(istTime);
@@ -52,7 +55,14 @@ const Navbar: React.FC = () => {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  const go = (href: string) => { setOpen(false); scrollTo(href); };
+  // page links open their page; section links scroll on home, or go home first from a sub-page
+  const go = (href: string) => {
+    setOpen(false);
+    const page = NAV_ITEMS.find(n => n.href === href)?.page;
+    if (page) navigate(page);
+    else if (path === '/') scrollTo(href);
+    else navigate(href === 'hero' ? '/' : `/#${href}`);
+  };
 
   return (
     <>

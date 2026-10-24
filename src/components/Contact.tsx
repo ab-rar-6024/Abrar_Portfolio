@@ -1,11 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Check, Copy, Github, Linkedin, Mail, MessageCircle, Phone, Send } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Github, Linkedin, Mail, MessageCircle, MessageCircleMore, Phone, Send } from 'lucide-react';
 import { personalInfo } from '../data';
+import DotMatrix from './DotMatrix';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const TOPICS = ['Freelance project', 'Internship', 'Full-time role', 'Just saying hi'];
 const WHATSAPP = personalInfo.phone.replace(/\D/g, '');
+
+// one icon per channel: shown on its card and drawn in dots on hover
+const CHANNEL_ICONS: Record<string, React.ReactNode> = {
+  email: <Mail size={28} strokeWidth={2.25} />,
+  phone: <Phone size={28} strokeWidth={2.25} />,
+  whatsapp: <MessageCircleMore size={28} strokeWidth={2.25} />,
+  linkedin: <Linkedin size={28} strokeWidth={2.25} />,
+  github: <Github size={28} strokeWidth={2.25} />,
+};
 
 const istTime = () =>
   new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', hour12: true });
@@ -66,12 +76,13 @@ const Contact: React.FC = () => {
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const [hovered, setHovered] = useState<string | null>(null);
   const channels = [
-    { icon: <Mail size={18} />, label: 'Email', value: personalInfo.email, href: `mailto:${personalInfo.email}` },
-    { icon: <Phone size={18} />, label: 'Phone', value: personalInfo.phone, href: `tel:+${WHATSAPP}` },
-    { icon: <MessageCircle size={18} />, label: 'WhatsApp', value: 'Message me directly', href: `https://wa.me/${WHATSAPP}` },
-    { icon: <Linkedin size={18} />, label: 'LinkedIn', value: personalInfo.linkedinHandle, href: personalInfo.linkedin },
-    { icon: <Github size={18} />, label: 'GitHub', value: personalInfo.githubHandle, href: personalInfo.github },
+    { id: 'email', kicker: 'Direct inquiries', label: 'Email', value: personalInfo.email, href: `mailto:${personalInfo.email}` },
+    { id: 'phone', kicker: 'Call me', label: 'Phone', value: personalInfo.phone, href: `tel:+${WHATSAPP}` },
+    { id: 'whatsapp', kicker: 'Quick chat', label: 'WhatsApp', value: 'Message me directly', href: `https://wa.me/${WHATSAPP}` },
+    { id: 'linkedin', kicker: 'Professional network', label: 'LinkedIn', value: personalInfo.linkedinHandle, href: personalInfo.linkedin },
+    { id: 'github', kicker: 'Open source', label: 'GitHub', value: personalInfo.githubHandle, href: personalInfo.github },
   ];
 
   const reveal = (delay = 0) => ({
@@ -117,7 +128,44 @@ const Contact: React.FC = () => {
           <span>Chennai, IN · {time} IST</span>
         </motion.div>
 
+        {/* direct channels: hovering a card redraws the dot display as that channel's icon */}
+        <div className="ct-reach">
+          <motion.div className="ct-reach-side" {...reveal()}>
+            <h3 className="ct-reach-title">Stay in <span>touch.</span></h3>
+            <DotMatrix icons={CHANNEL_ICONS} active={hovered} idleText="HI" />
+          </motion.div>
+          <ul className="ct-cards">
+            {channels.map((c, i) => (
+              <motion.li key={c.id} {...reveal(i * 0.06)}>
+                <a
+                  className="ct-card"
+                  href={c.href}
+                  target={c.href.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  onMouseEnter={() => setHovered(c.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  onFocus={() => setHovered(c.id)}
+                  onBlur={() => setHovered(null)}
+                >
+                  <span className="ct-card-ico">{CHANNEL_ICONS[c.id]}</span>
+                  <span className="ct-card-text">
+                    <small>{c.kicker}</small>
+                    <strong>{c.label}</strong>
+                    <span className="ct-card-value">{c.value}</span>
+                  </span>
+                  <span className="ct-card-go" aria-hidden><ArrowUpRight size={22} /></span>
+                </a>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
+
         <div className="ct-grid">
+          <motion.div className="ct-form-intro" {...reveal()}>
+            <h3>Or send a <span>message.</span></h3>
+            <p>Pick a topic, add a few lines, and it opens in your email app or WhatsApp ready to send.</p>
+          </motion.div>
+
           {/* form */}
           <motion.form className="ct-form" onSubmit={sendEmail} noValidate {...reveal()}>
             <p className="ct-label">I want to talk about</p>
@@ -158,20 +206,6 @@ const Contact: React.FC = () => {
             </div>
             <p className="ct-note">Opens your email app or WhatsApp with the message ready to send.</p>
           </motion.form>
-
-          {/* direct channels */}
-          <motion.ul className="ct-channels" {...reveal(0.1)}>
-            {channels.map(c => (
-              <li key={c.label}>
-                <a href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">
-                  <span className="ct-ico">{c.icon}</span>
-                  <span className="ct-ch-label">{c.label}</span>
-                  <span className="ct-ch-value">{c.value}</span>
-                  <ArrowUpRight size={18} className="ct-ch-go" />
-                </a>
-              </li>
-            ))}
-          </motion.ul>
         </div>
       </div>
 
@@ -200,7 +234,7 @@ const Contact: React.FC = () => {
         .ct-status span:first-child{display:flex;align-items:center;gap:.55rem;color:#ededed}
         .ct-status i{width:7px;height:7px;border-radius:50%;background:#3ddc97;animation:ct-ping 2s infinite}
 
-        .ct-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:3.5rem;align-items:start}
+        .ct-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);gap:4rem;align-items:start}
         .ct-label{margin:0 0 .8rem;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#8a8f98}
         .ct-topics{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem}
         .ct-topics button{padding:.6rem 1.05rem;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:none;color:#d4d7dc;cursor:pointer;
@@ -227,32 +261,49 @@ const Contact: React.FC = () => {
         .ct-btn.solid:hover{background:var(--cyan);border-color:var(--cyan)}
         .ct-note{margin:.9rem 0 0;font-size:.8rem;color:#8a8f98}
 
-        .ct-channels{list-style:none;margin:0;padding:0;border-top:1px solid rgba(255,255,255,.14)}
-        .ct-channels li{border-bottom:1px solid rgba(255,255,255,.14)}
-        .ct-channels a{position:relative;display:grid;grid-template-columns:2.4rem 6rem minmax(0,1fr) 1.4rem;align-items:center;gap:.8rem;
-          padding:1.3rem .5rem;color:#ededed;text-decoration:none;overflow:hidden;transition:color .35s}
-        .ct-channels a::before{content:'';position:absolute;inset:0;background:#ededed;transform:scaleY(0);transform-origin:bottom;
-          transition:transform .45s cubic-bezier(.22,1,.36,1)}
-        .ct-channels a:hover{color:#0b0b0c}
-        .ct-channels a:hover::before{transform:scaleY(1)}
-        .ct-channels a > *{position:relative}
-        .ct-ico{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid currentColor}
-        .ct-ch-label{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:1.05rem}
-        .ct-ch-value{font-family:'Space Mono',monospace;font-size:.74rem;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .ct-ch-go{transition:transform .35s cubic-bezier(.22,1,.36,1)}
-        .ct-channels a:hover .ct-ch-go{transform:rotate(45deg)}
+        .ct-reach{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:4rem;align-items:start;margin-bottom:6rem}
+        .ct-reach-side{position:sticky;top:7rem;display:flex;flex-direction:column;gap:2.4rem}
+        .ct-reach-title,.ct-form-intro h3{margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2.4rem,4.6vw,4rem);
+          line-height:.95;letter-spacing:-.05em;text-transform:uppercase}
+        .ct-reach-title span,.ct-form-intro h3 span{color:#3a3a3f}
+        .ct-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:1.1rem}
+        .ct-reach > *,.ct-cards li{min-width:0}
+        .ct-card{display:flex;align-items:center;gap:1.4rem;padding:1.5rem 1.6rem;border-radius:36px;background:#111113;
+          border:1px solid rgba(255,255,255,.08);color:#ededed;text-decoration:none;
+          transition:border-color .35s,background .35s,box-shadow .45s}
+        .ct-card:hover,.ct-card:focus-visible{border-color:rgba(255,255,255,.3);background:#151518;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+        .ct-card-ico{flex:none;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:#232327;color:#ededed}
+        .ct-card-text{display:flex;flex-direction:column;gap:.2rem;min-width:0}
+        .ct-card-text small{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#7a7f87}
+        .ct-card-text strong{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.05;letter-spacing:-.045em}
+        .ct-card-value{max-height:0;overflow:hidden;opacity:0;font-family:'Space Mono',monospace;font-size:.74rem;color:#a1a6ae;
+          white-space:nowrap;text-overflow:ellipsis;transition:max-height .4s cubic-bezier(.22,1,.36,1),opacity .3s}
+        .ct-card:hover .ct-card-value,.ct-card:focus-visible .ct-card-value{max-height:1.4rem;opacity:1}
+        .ct-card-go{flex:none;margin-left:auto;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#ededed;color:#0b0b0c;
+          transform:scale(0);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+        .ct-card:hover .ct-card-go,.ct-card:focus-visible .ct-card-go{transform:scale(1)}
+        @media (hover:none){
+          .ct-card-go{transform:scale(.75)}
+          .ct-card-value{max-height:1.4rem;opacity:1}
+        }
+        .ct-form-intro{display:flex;flex-direction:column;gap:1.2rem}
+        .ct-form-intro p{margin:0;max-width:340px;font-size:1rem;line-height:1.6;color:#a1a6ae}
         @keyframes ct-ping{0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}80%,100%{box-shadow:0 0 0 9px rgba(61,220,151,0)}}
 
-        @media (max-width:980px){ .ct-grid{grid-template-columns:1fr} }
+        @media (max-width:980px){
+          .ct-grid,.ct-reach{grid-template-columns:1fr;gap:2.5rem}
+          .ct-reach-side{position:relative;top:0}
+          .dm{max-width:320px}
+        }
         @media (max-width:640px){
           .ct{padding:5rem 0 4rem}
           .ct-wrap{padding:0 1.2rem}
           .ct-fields{grid-template-columns:1fr}
           .ct-mail{font-size:clamp(1rem,5.2vw,1.3rem);word-break:normal;overflow-wrap:anywhere}
-          .ct-channels a{grid-template-columns:2.4rem minmax(0,1fr) 1.2rem}
-          .ct-ch-value{grid-column:2;grid-row:2;margin-top:-.5rem}
-          .ct-ch-go{grid-row:1 / span 2;grid-column:3}
-          .ct-ico{grid-row:1 / span 2}
+          .ct-card{gap:1rem;padding:1.1rem 1.2rem;border-radius:28px}
+          .ct-reach-side .dm{display:none}
+          .ct-card-ico{width:54px;height:54px}
+          .ct-card-go{width:48px;height:48px}
         }
         @media (prefers-reduced-motion:reduce){.ct-status i{animation:none}}
       `}</style>

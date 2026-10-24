@@ -1,9 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion, useInView, useScroll, useTransform, type MotionValue } from 'framer-motion';
-import { ArrowDown, ArrowUpRight, Award, GraduationCap, Sparkles } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useInView, useScroll, useTransform, type MotionValue } from 'framer-motion';
+import { ArrowDown, ArrowRight, Award, GraduationCap, Sparkles } from 'lucide-react';
 import { useScrollTo } from '../hooks';
 import HowIWork from './HowIWork';
 import { awards, certifications, education, experiences, stats, type CertCategory } from '../data';
+import { CAT_COLOR } from '../data/certColors';
+import { SKILL_COUNT, SKILL_GROUPS } from '../data/skills';
+import { Link } from '../router';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const STATEMENT =
@@ -21,14 +24,10 @@ const JOURNEY = [
 ];
 
 const EXPLORING = ['Agentic AI', 'Deep Learning', 'Generative AI apps', 'Prompt engineering'];
-const CATEGORIES: ('All' | CertCategory)[] = ['All', 'AI & ML', 'Generative AI', 'Data & Analytics', 'Programming & Cloud'];
-const CAT_COLOR: Record<CertCategory, string> = {
-  'AI & ML': '#00f5ff',
-  'Generative AI': '#9b59ff',
-  'Data & Analytics': '#f2c811',
-  'Programming & Cloud': '#3ddc97',
-};
-const PREVIEW = 9;
+const CERT_SPLIT = (Object.keys(CAT_COLOR) as CertCategory[]).map(cat => ({
+  cat, color: CAT_COLOR[cat], n: certifications.filter(c => c.category === cat).length,
+}));
+const CERT_AREAS = CERT_SPLIT.filter(s => s.n).length;
 const DEGREE_START = new Date('2023-08-01').getTime();
 const DEGREE_END = new Date('2027-05-31').getTime();
 
@@ -76,17 +75,12 @@ const About: React.FC = () => {
   const statementRef = useRef<HTMLParagraphElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const statsIn = useInView(statsRef, { once: true, margin: '-60px' });
-  const [cat, setCat] = useState<'All' | CertCategory>('All');
-  const [showAll, setShowAll] = useState(false);
 
   const { scrollYProgress } = useScroll({ target: statementRef, offset: ['start 0.85', 'end 0.45'] });
   const journeyRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: journeyProgress } = useScroll({ target: journeyRef, offset: ['start 0.8', 'end 0.55'] });
   const words = STATEMENT.split(' ');
 
-  const filtered = useMemo(() => (cat === 'All' ? certifications : certifications.filter(c => c.category === cat)), [cat]);
-  const visible = showAll ? filtered : filtered.slice(0, PREVIEW);
-  const countFor = (c: 'All' | CertCategory) => (c === 'All' ? certifications.length : certifications.filter(x => x.category === c).length);
   const degree = Math.round(Math.min(1, Math.max(0, (Date.now() - DEGREE_START) / (DEGREE_END - DEGREE_START))) * 100);
   const award = awards[0];
 
@@ -189,59 +183,39 @@ const About: React.FC = () => {
         </motion.div>
         <HowIWork />
 
-        {/* certifications */}
-        <motion.div className="ab-sub ab-cert-head" {...reveal()}>
-          <h3>Certifications <em>({certifications.length})</em></h3>
-          <div className="ab-filters" role="tablist" aria-label="Filter certifications">
-            {CATEGORIES.map(c => (
-              <button
-                key={c}
-                role="tab"
-                aria-selected={cat === c}
-                className={cat === c ? 'on' : ''}
-                onClick={() => { setCat(c); setShowAll(false); }}
-              >
-                {c} <sup>{countFor(c)}</sup>
-              </button>
-            ))}
-          </div>
+        {/* skills and certifications live on their own pages */}
+        <motion.div className="ab-sub ab-go-head" {...reveal()}>
+          <h3>Go deeper</h3>
+          <span className="ab-mono">each opens its own page</span>
         </motion.div>
-
-        <motion.ul className="ab-certs" layout>
-          <AnimatePresence mode="popLayout">
-            {visible.map(c => (
-              <motion.li
-                key={c.name}
-                layout
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.35, ease: EASE }}
-                className="ab-cert"
-                style={{ ['--c' as string]: CAT_COLOR[c.category] }}
-              >
-                <div className="ab-cert-top">
-                  <span className="ab-dot" />
-                  <span className="ab-cat">{c.category}</span>
-                  <span className="ab-date">{c.date}</span>
-                </div>
-                <h4>{c.name}</h4>
-                <p className="ab-muted">{c.issuer}{c.via ? ` · via ${c.via}` : ''}</p>
-                {c.url && (
-                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="ab-verify">
-                    verify <ArrowUpRight size={13} />
-                  </a>
-                )}
-              </motion.li>
-            ))}
-          </AnimatePresence>
-        </motion.ul>
-
-        {filtered.length > PREVIEW && (
-          <button className="ab-more" onClick={() => setShowAll(v => !v)}>
-            {showAll ? 'Show fewer' : `Show all ${filtered.length}`} <ArrowDown size={14} style={{ transform: showAll ? 'rotate(180deg)' : 'none' }} />
-          </button>
-        )}
+        <div className="ab-go">
+          <motion.div {...reveal()}>
+            <Link to="/skills" className="ab-go-card">
+              <div className="ab-go-top">
+                <span className="ab-label">{SKILL_COUNT} skills · {SKILL_GROUPS.length} areas</span>
+                <span className="ab-go-arrow"><ArrowRight size={20} /></span>
+              </div>
+              <h4>Skills <em>with receipts</em></h4>
+              <p className="ab-muted">Pick any skill and see the projects, certificates and internships that prove it.</p>
+              <div className="ab-go-chips">
+                {SKILL_GROUPS.flatMap(g => g.skills).slice(0, 7).map(s => <span key={s.name}>{s.name}</span>)}
+              </div>
+            </Link>
+          </motion.div>
+          <motion.div {...reveal(0.1)}>
+            <Link to="/certifications" className="ab-go-card cert">
+              <div className="ab-go-top">
+                <span className="ab-label">{certifications.length} certificates · {CERT_AREAS} areas</span>
+                <span className="ab-go-arrow"><ArrowRight size={20} /></span>
+              </div>
+              <h4>Certifications <em>by year</em></h4>
+              <p className="ab-muted">Illinois Tech, Vanderbilt, Microsoft, Anthropic, IIT Bombay, BCG X and more — with links to verify.</p>
+              <div className="ab-go-bar" aria-hidden>
+                {CERT_SPLIT.map(s => <i key={s.cat} style={{ flex: s.n, background: s.color }} />)}
+              </div>
+            </Link>
+          </motion.div>
+        </div>
       </div>
 
       <style>{`
@@ -294,29 +268,29 @@ const About: React.FC = () => {
         .ab-bar{height:5px;margin-top:1rem;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
         .ab-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
 
-        .ab-cert-head{margin-top:5rem;padding-bottom:1.2rem;border-bottom:1px solid rgba(255,255,255,.12)}
-        .ab-filters{display:flex;gap:.5rem;flex-wrap:wrap}
-        .ab-filters button{padding:.45rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:none;color:#c4c8ce;
-          font-family:'Space Grotesk',sans-serif;font-size:.85rem;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
-        .ab-filters button sup{font-family:'Space Mono',monospace;font-size:.6rem;opacity:.7}
-        .ab-filters button:hover{border-color:#ededed}
-        .ab-filters button.on{background:#ededed;color:#0b0b0c;border-color:#ededed}
-
-        .ab-certs{list-style:none;margin:1.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
-        .ab-cert{position:relative;display:flex;flex-direction:column;padding:1.3rem 1.3rem 1.2rem;border-radius:16px;
-          border:1px solid rgba(255,255,255,.09);background:#121214;transition:border-color .3s,transform .3s}
-        .ab-cert:hover{border-color:var(--c);transform:translateY(-3px)}
-        .ab-cert-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-family:'Space Mono',monospace;font-size:.62rem;
-          letter-spacing:.08em;text-transform:uppercase;color:#8a8f98}
-        .ab-dot{width:7px;height:7px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
-        .ab-date{margin-left:auto}
-        .ab-cert h4{margin:0 0 .35rem;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:1.02rem;line-height:1.3;letter-spacing:-.01em}
-        .ab-verify{align-self:flex-start;display:inline-flex;align-items:center;gap:.25rem;margin-top:auto;padding-top:.9rem;color:var(--c);
-          font-family:'Space Mono',monospace;font-size:.7rem;text-decoration:none}
-        .ab-verify:hover{text-decoration:underline}
-        .ab-more{display:flex;align-items:center;gap:.4rem;margin:2rem auto 0;padding:.8rem 1.6rem;border-radius:999px;border:1px solid rgba(255,255,255,.18);
-          background:none;color:#ededed;font-family:'Space Grotesk',sans-serif;font-size:.92rem;cursor:pointer;transition:background .25s,color .25s}
-        .ab-more:hover{background:#ededed;color:#0b0b0c}
+        .ab-go-head{margin-top:5rem;padding-bottom:1.2rem;border-bottom:1px solid rgba(255,255,255,.12)}
+        .ab-go{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.6rem}
+        .ab-go > div{height:100%}
+        .ab-go-card{position:relative;height:100%;display:flex;flex-direction:column;gap:.8rem;padding:1.8rem;border-radius:20px;
+          border:1px solid rgba(255,255,255,.1);color:#ededed;text-decoration:none;overflow:hidden;
+          background:radial-gradient(circle at 100% 0%,rgba(0,245,255,.12),transparent 55%),#121214;
+          transition:border-color .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+        .ab-go-card.cert{background:radial-gradient(circle at 100% 0%,rgba(155,89,255,.16),transparent 55%),#121214}
+        .ab-go-card:hover{border-color:rgba(255,255,255,.32);transform:translateY(-4px)}
+        .ab-go-top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+        .ab-go-top .ab-label{margin:0}
+        .ab-go-arrow{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:#ededed;color:#0b0b0c;
+          transition:transform .45s cubic-bezier(.22,1,.36,1),background .3s}
+        .ab-go-card:hover .ab-go-arrow{transform:rotate(-45deg);background:var(--cyan)}
+        .ab-go-card h4{margin:1.2rem 0 0;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:clamp(2rem,3.6vw,3rem);
+          letter-spacing:-.045em;line-height:1}
+        .ab-go-card h4 em{font-style:italic;color:var(--cyan)}
+        .ab-go-card.cert h4 em{color:#b48cff}
+        .ab-go-card .ab-muted{max-width:440px;font-size:.95rem}
+        .ab-go-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:auto;padding-top:.6rem}
+        .ab-go-chips span{padding:.35rem .75rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:.8rem;color:#d4d7dc}
+        .ab-go-bar{display:flex;gap:3px;height:8px;margin-top:auto;padding-top:0;border-radius:4px;overflow:hidden}
+        .ab-go-bar i{display:block;height:8px;border-radius:2px}
 
 
         .ab-journey-head{margin-top:4.5rem}
@@ -353,7 +327,7 @@ const About: React.FC = () => {
         @media (max-width:980px){
           .ab-cols{grid-template-columns:1fr}
           .ab-side{margin-top:0;grid-template-columns:1fr 1fr}
-          .ab-certs{grid-template-columns:repeat(2,minmax(0,1fr))}
+          .ab-go{grid-template-columns:1fr}
         }
         @media (max-width:640px){
           .ab{padding:5rem 0 4rem}
@@ -367,7 +341,7 @@ const About: React.FC = () => {
           .ab-role{grid-column:2}
           .ab-when{grid-column:2}
           .ab-side{grid-template-columns:1fr}
-          .ab-certs{grid-template-columns:1fr}
+          .ab-go-card{padding:1.4rem}
         }
       `}</style>
     </section>

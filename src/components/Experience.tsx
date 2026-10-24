@@ -54,17 +54,12 @@ const Experience: React.FC = () => {
           {/* sticky panel that follows the entry being read */}
           <aside className="ex-sticky" aria-hidden>
             <div className="ex-counter">
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={active}
-                  initial={{ y: '100%' }}
-                  animate={{ y: '0%' }}
-                  exit={{ y: '-100%' }}
-                  transition={{ duration: 0.5, ease: EASE }}
-                >
-                  {String(active + 1).padStart(2, '0')}
-                </motion.span>
-              </AnimatePresence>
+              {/* one reel of numbers that slides, so fast scrolling can't stack digits */}
+              <span className="ex-reel-win">
+                <span className="ex-reel" style={{ transform: `translateY(${(-active / total) * 100}%)` }}>
+                  {experiences.map((e, i) => <span key={e.id}>{String(i + 1).padStart(2, '0')}</span>)}
+                </span>
+              </span>
               <small>/ {String(total).padStart(2, '0')}</small>
             </div>
             <AnimatePresence mode="wait">
@@ -176,8 +171,9 @@ const Experience: React.FC = () => {
         .ex-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:3.5rem;align-items:start}
         .ex-sticky{position:sticky;top:7rem;padding-right:1rem}
         .ex-counter{display:flex;align-items:flex-end;gap:.5rem;font-family:'Space Grotesk',sans-serif;font-weight:500;line-height:.85}
-        .ex-counter span{display:inline-block;font-size:clamp(5rem,10vw,9rem);letter-spacing:-.06em}
-        .ex-counter{overflow:hidden;height:clamp(4.4rem,8.6vw,7.8rem)}
+        .ex-reel-win{display:block;height:.85em;overflow:hidden;font-size:clamp(5rem,10vw,9rem);letter-spacing:-.06em}
+        .ex-reel{display:block;transition:transform .6s cubic-bezier(.22,1,.36,1)}
+        .ex-reel span{display:block;height:.85em}
         .ex-counter small{font-size:1.2rem;color:#8a8f98;margin-bottom:.6rem}
         .ex-sticky-co{margin:1.4rem 0 .3rem;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:1.6rem;letter-spacing:-.03em}
         .ex-sticky-when{margin:0;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;color:var(--cyan)}

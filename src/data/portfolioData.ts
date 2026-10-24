@@ -1,5 +1,5 @@
 // ─── TYPES ────────────────────────────────────────────────────────
-export interface NavItem { label: string; href: string; }
+export interface NavItem { label: string; href: string; page?: '/skills' | '/certifications'; }
 export interface SkillBar { name: string; pct: number; }
 export interface SkillGroup { title: string; skills: SkillBar[]; tags?: string[]; }
 export interface Project { 
@@ -20,9 +20,10 @@ export interface Certification { icon: string; name: string; issuer: string; }
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Home',       href: 'hero'       },
   { label: 'About',      href: 'about'      },
-  { label: 'Skills',     href: 'skills'     },
+  { label: 'Skills',     href: 'skills',       page: '/skills'         },
   { label: 'Projects',   href: 'projects'   },
   { label: 'Experience', href: 'experience' },
+  { label: 'Certificates', href: 'certifications', page: '/certifications' },
   { label: 'Contact',    href: 'contact'    },
 ];
 
