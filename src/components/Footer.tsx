@@ -106,9 +106,18 @@ const Footer: React.FC = () => {
       </div>
 
       <style>{`
-        .ft{position:relative;z-index:1;background:#0b0b0c;color:#ededed;border-top:1px solid rgba(255,255,255,.12);overflow:hidden;
-          animation:ft-drift 54s ease-in-out infinite}
-        .ft-wrap{max-width:1240px;margin:0 auto;padding:4.5rem 2.2% 1.6rem}
+        .ft{position:relative;z-index:1;background:#0b0b0c;color:#ededed;border-top:1px solid rgba(255,255,255,.12);overflow:hidden}
+        /* black at the top, a coloured glow rising from the bottom that slowly blends through the palette */
+        @property --ft-a{syntax:'<color>';inherits:false;initial-value:#a3125f}
+        @property --ft-b{syntax:'<color>';inherits:false;initial-value:#5b25a8}
+        .ft::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+          background:
+            radial-gradient(135% 105% at 15% 115%,var(--ft-a),transparent 72%),
+            radial-gradient(125% 100% at 90% 118%,var(--ft-b),transparent 70%);
+          animation:ft-glow 24s ease-in-out infinite}
+        .ft::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+          background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+        .ft-wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:4.5rem 2.2% 1.6rem}
         .ft-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:2.5rem}
         .ft-logo{margin:0 0 1rem;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.6rem;letter-spacing:-.04em}
         .ft-logo span,.ft-word .dot{color:var(--cyan)}
@@ -135,12 +144,11 @@ const Footer: React.FC = () => {
           background:none;color:#ededed;cursor:pointer;font-family:inherit;font-size:inherit;transition:background .25s,color .25s}
         .ft-bar button:hover{background:#ededed;color:#0b0b0c}
         @keyframes ft-ping{0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}80%,100%{box-shadow:0 0 0 8px rgba(61,220,151,0)}}
-        /* the background drifts through deep tints slowly enough that the change is never noticed as it happens */
-        @keyframes ft-drift{
-          0%,100%{background-color:#0b0b0c}
-          25%{background-color:#0a1326}
-          50%{background-color:#170c26}
-          75%{background-color:#06191c}
+        @keyframes ft-glow{
+          0%,100%{--ft-a:#a3125f;--ft-b:#5b25a8}
+          25%{--ft-a:#11798c;--ft-b:#0d5a8a}
+          50%{--ft-a:#3c6a5a;--ft-b:#a34714}
+          75%{--ft-a:#5b25a8;--ft-b:#a3125f}
         }
 
         @media (max-width:900px){ .ft-cols{grid-template-columns:1fr 1fr} .ft-about{grid-column:1 / -1} }
@@ -148,7 +156,7 @@ const Footer: React.FC = () => {
           .ft-wrap{padding:3.5rem 1.2rem 1.4rem}
           .ft-built{display:none}
         }
-        @media (prefers-reduced-motion:reduce){.ft-avail i,.ft{animation:none}}
+        @media (prefers-reduced-motion:reduce){.ft-avail i,.ft::before{animation:none}}
       `}</style>
     </footer>
   );
